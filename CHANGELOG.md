@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.4
+
+- Fixed RTL bullet marker alignment by tagging parent lists of RTL items with `data-lara-rtl-list="1"`.
+- Ensured `ul/ol` containers inherit RTL direction when their `li` items are Arabic or mixed Arabic/English.
+
 ## 1.0.3
 
 - Fixed mixed Arabic/English lines that start with Latin text or emoji by introducing `data-lara-mixed-rtl` override (`unicode-bidi: isolate` + forced RTL).

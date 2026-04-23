@@ -46,8 +46,13 @@ const CSS_PATCH_BLOCK = `${CSS_PATCH_START}
   unicode-bidi: isolate !important;
 }
 
+[data-lara-rtl-list="1"] {
+  direction: rtl !important;
+}
+
 [dir="rtl"] ul,
-[dir="rtl"] ol {
+[dir="rtl"] ol,
+[data-lara-rtl-list="1"] {
   padding-inline-start: 0 !important;
   padding-inline-end: 1.25rem !important;
   margin-inline: 0 !important;
@@ -90,8 +95,13 @@ const HTML_PATCH_BLOCK = `${HTML_PATCH_START}
     unicode-bidi: isolate !important;
   }
 
+  [data-lara-rtl-list="1"] {
+    direction: rtl !important;
+  }
+
   [dir="rtl"] ul,
-  [dir="rtl"] ol {
+  [dir="rtl"] ol,
+  [data-lara-rtl-list="1"] {
     padding-inline-start: 0 !important;
     padding-inline-end: 1.25rem !important;
     margin-inline: 0 !important;
@@ -193,6 +203,13 @@ const HTML_PATCH_BLOCK = `${HTML_PATCH_START}
       element.style.direction = 'rtl';
       element.style.textAlign = 'start';
       element.style.unicodeBidi = 'isolate';
+      if (element.matches('li')) {
+        const list = element.closest('ul, ol');
+        if (list instanceof HTMLElement) {
+          list.setAttribute('dir', 'rtl');
+          list.setAttribute('data-lara-rtl-list', '1');
+        }
+      }
       return;
     }
 
@@ -201,6 +218,13 @@ const HTML_PATCH_BLOCK = `${HTML_PATCH_START}
       element.style.direction = 'rtl';
       element.style.textAlign = 'start';
       element.style.unicodeBidi = 'plaintext';
+      if (element.matches('li')) {
+        const list = element.closest('ul, ol');
+        if (list instanceof HTMLElement) {
+          list.setAttribute('dir', 'rtl');
+          list.setAttribute('data-lara-rtl-list', '1');
+        }
+      }
     }
   };
 
@@ -278,8 +302,12 @@ ${JS_PATCH_START}
           text-align: start !important;
           unicode-bidi: isolate !important;
         }
+        [data-lara-rtl-list="1"] {
+          direction: rtl !important;
+        }
         [dir="rtl"] ul,
-        [dir="rtl"] ol {
+        [dir="rtl"] ol,
+        [data-lara-rtl-list="1"] {
           padding-inline-start: 0 !important;
           padding-inline-end: 1.25rem !important;
           margin-inline: 0 !important;
@@ -375,6 +403,13 @@ ${JS_PATCH_START}
         element.style.direction = 'rtl';
         element.style.textAlign = 'start';
         element.style.unicodeBidi = 'isolate';
+        if (element.matches('li')) {
+          const list = element.closest('ul, ol');
+          if (list instanceof HTMLElement) {
+            list.setAttribute('dir', 'rtl');
+            list.setAttribute('data-lara-rtl-list', '1');
+          }
+        }
         return;
       }
 
@@ -383,6 +418,13 @@ ${JS_PATCH_START}
         element.style.direction = 'rtl';
         element.style.textAlign = 'start';
         element.style.unicodeBidi = 'plaintext';
+        if (element.matches('li')) {
+          const list = element.closest('ul, ol');
+          if (list instanceof HTMLElement) {
+            list.setAttribute('dir', 'rtl');
+            list.setAttribute('data-lara-rtl-list', '1');
+          }
+        }
       }
     };
 

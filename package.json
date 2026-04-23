@@ -2,7 +2,7 @@
   "name": "lara-claude-rtl-patcher",
   "displayName": "Lara Claude RTL Patcher",
   "description": "Official RTL/BiDi patcher for Claude Code in VS Code with Arabic-friendly mixed-text rendering.",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "publisher": "lara",
   "license": "MIT",
   "repository": {
