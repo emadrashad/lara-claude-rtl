@@ -122,7 +122,7 @@ const HTML_PATCH_BLOCK = `${HTML_PATCH_START}
   const ESCAPE_RE = /\\\\u206[6-9]|\\\\u200[e-f]/g;
   const ARABIC_RE = /[\\u0590-\\u08FF]/;
   const USER_MESSAGE_SELECTOR = '.userMessage_07S1Yg';
-  const TARGET_DIR_SELECTOR = '.root_-a7MRw, .content_mLrg7g, .secondaryLine_mLrg7g, .toolBodyRowContent_ZUQaOA, .userMessage_07S1Yg';
+  const TARGET_DIR_SELECTOR = '.content_mLrg7g, .secondaryLine_mLrg7g, .toolBodyRowContent_ZUQaOA, .userMessage_07S1Yg';
 
   const map = {
     "\\\\u2066": "\\u2066",
@@ -175,8 +175,8 @@ const HTML_PATCH_BLOCK = `${HTML_PATCH_START}
     }
 
     if (ARABIC_RE.test(text)) {
-      element.setAttribute('dir', 'rtl');
-      element.style.direction = 'rtl';
+      element.setAttribute('dir', 'auto');
+      element.style.removeProperty('direction');
       element.style.textAlign = 'start';
       element.style.unicodeBidi = 'plaintext';
     }
@@ -285,7 +285,7 @@ ${JS_PATCH_START}
     const ESCAPE_RE = /\\\\u206[6-9]|\\\\u200[e-f]/g;
     const ARABIC_RE = /[\\u0590-\\u08FF]/;
     const USER_MESSAGE_SELECTOR = '.userMessage_07S1Yg';
-    const TARGET_DIR_SELECTOR = '.root_-a7MRw, .content_mLrg7g, .secondaryLine_mLrg7g, .toolBodyRowContent_ZUQaOA, .userMessage_07S1Yg';
+    const TARGET_DIR_SELECTOR = '.content_mLrg7g, .secondaryLine_mLrg7g, .toolBodyRowContent_ZUQaOA, .userMessage_07S1Yg';
     const map = {
       '\\\\u2066': '\\u2066',
       '\\\\u2067': '\\u2067',
@@ -335,8 +335,8 @@ ${JS_PATCH_START}
       }
 
       if (ARABIC_RE.test(text)) {
-      element.setAttribute('dir', 'rtl');
-        element.style.direction = 'rtl';
+        element.setAttribute('dir', 'auto');
+        element.style.removeProperty('direction');
         element.style.textAlign = 'start';
         element.style.unicodeBidi = 'plaintext';
       }

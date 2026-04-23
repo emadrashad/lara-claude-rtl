@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.0.11
+
+- Stopped applying direction heuristics to broad root containers to avoid whole-response right-shift in deep analysis views.
+- Restored non-user mixed Arabic/English blocks to `dir="auto"` (with no forced `direction: rtl`) for more natural BiDi flow.
+
 ## 0.0.10
 
 - Fixed RTL unordered/ordered list rendering in Claude responses (`ul/ol/li::marker`) for mixed Arabic/English blocks.
