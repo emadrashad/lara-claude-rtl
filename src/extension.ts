@@ -42,7 +42,7 @@ const CSS_PATCH_BLOCK = `${CSS_PATCH_START}
   [class*="userMessage_"],
   [class*="userMessageContainer_"],
   [class*="userMessage"]
-) :where(p, li, div, span, td, th, blockquote) {
+) :where(p, li, div, span, td, th, blockquote, h1, h2, h3, h4, h5, h6) {
   unicode-bidi: plaintext !important;
 }
 
@@ -53,10 +53,22 @@ const CSS_PATCH_BLOCK = `${CSS_PATCH_START}
 }
 
 [data-lara-user-rtl="1"],
-[data-lara-user-rtl="1"] :where(div, span, p, input, textarea, [role="textbox"], [contenteditable="true"]) {
+[data-lara-user-rtl="1"] :where(div, span, p, h1, h2, h3, h4, h5, h6, input, textarea, [role="textbox"], [contenteditable="true"]) {
   direction: rtl !important;
   text-align: right !important;
   unicode-bidi: isolate !important;
+}
+
+[data-lara-heading-rtl="1"] {
+  direction: rtl !important;
+  text-align: right !important;
+  unicode-bidi: plaintext !important;
+}
+
+:where(input, textarea, [role="textbox"], [contenteditable="true"]) {
+  direction: auto !important;
+  text-align: start !important;
+  unicode-bidi: plaintext !important;
 }
 
 [data-lara-rtl-list="1"] {
@@ -109,10 +121,22 @@ const HTML_PATCH_BLOCK = `${HTML_PATCH_START}
   }
 
   [data-lara-user-rtl="1"],
-  [data-lara-user-rtl="1"] :where(div, span, p, input, textarea, [role="textbox"], [contenteditable="true"]) {
+  [data-lara-user-rtl="1"] :where(div, span, p, h1, h2, h3, h4, h5, h6, input, textarea, [role="textbox"], [contenteditable="true"]) {
     direction: rtl !important;
     text-align: right !important;
     unicode-bidi: isolate !important;
+  }
+
+  [data-lara-heading-rtl="1"] {
+    direction: rtl !important;
+    text-align: right !important;
+    unicode-bidi: plaintext !important;
+  }
+
+  :where(input, textarea, [role="textbox"], [contenteditable="true"]) {
+    direction: auto !important;
+    text-align: start !important;
+    unicode-bidi: plaintext !important;
   }
 
   [data-lara-rtl-list="1"] {
@@ -152,9 +176,11 @@ const HTML_PATCH_BLOCK = `${HTML_PATCH_START}
   const ESCAPE_RE = /\\\\u206[6-9]|\\\\u200[e-f]/g;
   const ARABIC_RE = /[\\u0590-\\u08FF]/;
   const LATIN_RE = /[A-Za-z]/;
+  const INPUT_SELECTOR = 'input, textarea, [role="textbox"], [contenteditable="true"]';
+  const HEADING_SELECTOR = 'h1, h2, h3, h4, h5, h6, [role="heading"], [aria-level]';
   const USER_MESSAGE_SELECTOR = '.userMessage_07S1Yg, .message_07S1Yg.userMessageContainer_07S1Yg, .slashCommandMessage_07S1Yg, .slashCommandResultMessage_07S1Yg, [class*="userMessage_"], [class*="userMessageContainer_"], [class*="userMessage"], [class*="slashCommandMessage"]';
-  const TARGET_DIR_SELECTOR = '.content_mLrg7g, .secondaryLine_mLrg7g, .toolBodyRowContent_ZUQaOA, .message_07S1Yg, .userMessage_07S1Yg, .message_07S1Yg.userMessageContainer_07S1Yg, .slashCommandMessage_07S1Yg, .slashCommandResultMessage_07S1Yg, [class*="userMessage_"], [class*="userMessageContainer_"], [class*="userMessage"], [class*="slashCommandMessage"], p, li, blockquote, td, th, input, textarea, [role="textbox"], [contenteditable="true"]';
-  const CLAUDE_SCOPE_SELECTOR = '.markdown-body, .prose, .message, .message-content, .chat-message, [class*="root_"], [class*="toolBodyRowContent_"], .content_mLrg7g, .secondaryLine_mLrg7g, .userMessage_07S1Yg, [class*="userMessage_"], [class*="userMessageContainer_"], [class*="userMessage"]';
+  const TARGET_DIR_SELECTOR = '.content_mLrg7g, .secondaryLine_mLrg7g, .toolBodyRowContent_ZUQaOA, .message_07S1Yg, .userMessage_07S1Yg, .message_07S1Yg.userMessageContainer_07S1Yg, .slashCommandMessage_07S1Yg, .slashCommandResultMessage_07S1Yg, [class*="userMessage_"], [class*="userMessageContainer_"], [class*="userMessage"], [class*="slashCommandMessage"], p, li, blockquote, td, th, h1, h2, h3, h4, h5, h6, [role="heading"], [aria-level], input, textarea, [role="textbox"], [contenteditable="true"]';
+  const CLAUDE_SCOPE_SELECTOR = '.markdown-body, .prose, .message, .message-content, .chat-message, .chatContainer_07S1Yg, .messagesContainer_07S1Yg, .turn_07S1Yg, .message_07S1Yg, .content_mLrg7g, .secondaryLine_mLrg7g, .userMessage_07S1Yg, .message_07S1Yg.userMessageContainer_07S1Yg, .slashCommandMessage_07S1Yg, .slashCommandResultMessage_07S1Yg, [class*="root_"], [class*="toolBodyRowContent_"], [class*="messagesContainer_"], [class*="turn_"], [class*="message_"], [class*="userMessage_"], [class*="userMessageContainer_"], [class*="userMessage"], [class*="slashCommandMessage"]';
 
   const map = {
     "\\\\u2066": "\\u2066",
@@ -205,8 +231,15 @@ const HTML_PATCH_BLOCK = `${HTML_PATCH_START}
     if (!element.matches(TARGET_DIR_SELECTOR)) {
       return;
     }
-    const isTextEntry = element.matches('input, textarea, [role="textbox"], [contenteditable="true"]');
-    if (!isTextEntry && !element.closest(CLAUDE_SCOPE_SELECTOR)) {
+    const isTextEntry = element.matches(INPUT_SELECTOR);
+    if (isTextEntry) {
+      element.style.setProperty('direction', 'auto', 'important');
+      element.style.setProperty('text-align', 'start', 'important');
+      element.style.setProperty('unicode-bidi', 'plaintext', 'important');
+      return;
+    }
+
+    if (!element.closest(CLAUDE_SCOPE_SELECTOR)) {
       return;
     }
 
@@ -231,6 +264,16 @@ const HTML_PATCH_BLOCK = `${HTML_PATCH_START}
         element.setAttribute('data-lara-user-rtl', '1');
       } else {
         element.removeAttribute('data-lara-user-rtl');
+      }
+      return;
+    }
+
+    if (element.matches(HEADING_SELECTOR)) {
+      if (hasArabic) {
+        element.setAttribute('data-lara-heading-rtl', '1');
+        applyDirection(element, 'rtl', isMixed);
+      } else {
+        element.removeAttribute('data-lara-heading-rtl');
       }
       return;
     }
@@ -325,7 +368,7 @@ ${JS_PATCH_START}
         :where(.markdown-body, .prose, .message, .message-content, .chat-message, [class*="root_"], [class*="toolBodyRowContent_"], .userMessage_07S1Yg, .message_07S1Yg.userMessageContainer_07S1Yg, [class*="userMessage_"], [class*="userMessageContainer_"], [class*="userMessage"]) {
           text-align: start !important;
         }
-        :where(.markdown-body, .prose, .message, .message-content, .chat-message, [class*="root_"], [class*="toolBodyRowContent_"], .userMessage_07S1Yg, [class*="userMessage_"], [class*="userMessageContainer_"], [class*="userMessage"]) :where(p, li, div, span, td, th, blockquote) {
+        :where(.markdown-body, .prose, .message, .message-content, .chat-message, [class*="root_"], [class*="toolBodyRowContent_"], .userMessage_07S1Yg, [class*="userMessage_"], [class*="userMessageContainer_"], [class*="userMessage"]) :where(p, li, div, span, td, th, blockquote, h1, h2, h3, h4, h5, h6) {
           unicode-bidi: plaintext !important;
         }
         [data-lara-mixed-rtl="1"] {
@@ -334,10 +377,20 @@ ${JS_PATCH_START}
           unicode-bidi: isolate !important;
         }
         [data-lara-user-rtl="1"],
-        [data-lara-user-rtl="1"] :where(div, span, p, input, textarea, [role="textbox"], [contenteditable="true"]) {
+        [data-lara-user-rtl="1"] :where(div, span, p, h1, h2, h3, h4, h5, h6, input, textarea, [role="textbox"], [contenteditable="true"]) {
           direction: rtl !important;
           text-align: right !important;
           unicode-bidi: isolate !important;
+        }
+        [data-lara-heading-rtl="1"] {
+          direction: rtl !important;
+          text-align: right !important;
+          unicode-bidi: plaintext !important;
+        }
+        :where(input, textarea, [role="textbox"], [contenteditable="true"]) {
+          direction: auto !important;
+          text-align: start !important;
+          unicode-bidi: plaintext !important;
         }
         [data-lara-rtl-list="1"] {
           direction: rtl !important;
@@ -372,9 +425,11 @@ ${JS_PATCH_START}
     const ESCAPE_RE = /\\\\u206[6-9]|\\\\u200[e-f]/g;
     const ARABIC_RE = /[\\u0590-\\u08FF]/;
     const LATIN_RE = /[A-Za-z]/;
+    const INPUT_SELECTOR = 'input, textarea, [role="textbox"], [contenteditable="true"]';
+    const HEADING_SELECTOR = 'h1, h2, h3, h4, h5, h6, [role="heading"], [aria-level]';
     const USER_MESSAGE_SELECTOR = '.userMessage_07S1Yg, .message_07S1Yg.userMessageContainer_07S1Yg, .slashCommandMessage_07S1Yg, .slashCommandResultMessage_07S1Yg, [class*="userMessage_"], [class*="userMessageContainer_"], [class*="userMessage"], [class*="slashCommandMessage"]';
-    const TARGET_DIR_SELECTOR = '.content_mLrg7g, .secondaryLine_mLrg7g, .toolBodyRowContent_ZUQaOA, .message_07S1Yg, .userMessage_07S1Yg, .message_07S1Yg.userMessageContainer_07S1Yg, .slashCommandMessage_07S1Yg, .slashCommandResultMessage_07S1Yg, [class*="userMessage_"], [class*="userMessageContainer_"], [class*="userMessage"], [class*="slashCommandMessage"], p, li, blockquote, td, th, input, textarea, [role="textbox"], [contenteditable="true"]';
-    const CLAUDE_SCOPE_SELECTOR = '.markdown-body, .prose, .message, .message-content, .chat-message, [class*="root_"], [class*="toolBodyRowContent_"], .content_mLrg7g, .secondaryLine_mLrg7g, .userMessage_07S1Yg, [class*="userMessage_"], [class*="userMessageContainer_"], [class*="userMessage"]';
+    const TARGET_DIR_SELECTOR = '.content_mLrg7g, .secondaryLine_mLrg7g, .toolBodyRowContent_ZUQaOA, .message_07S1Yg, .userMessage_07S1Yg, .message_07S1Yg.userMessageContainer_07S1Yg, .slashCommandMessage_07S1Yg, .slashCommandResultMessage_07S1Yg, [class*="userMessage_"], [class*="userMessageContainer_"], [class*="userMessage"], [class*="slashCommandMessage"], p, li, blockquote, td, th, h1, h2, h3, h4, h5, h6, [role="heading"], [aria-level], input, textarea, [role="textbox"], [contenteditable="true"]';
+    const CLAUDE_SCOPE_SELECTOR = '.markdown-body, .prose, .message, .message-content, .chat-message, .chatContainer_07S1Yg, .messagesContainer_07S1Yg, .turn_07S1Yg, .message_07S1Yg, .content_mLrg7g, .secondaryLine_mLrg7g, .userMessage_07S1Yg, .message_07S1Yg.userMessageContainer_07S1Yg, .slashCommandMessage_07S1Yg, .slashCommandResultMessage_07S1Yg, [class*="root_"], [class*="toolBodyRowContent_"], [class*="messagesContainer_"], [class*="turn_"], [class*="message_"], [class*="userMessage_"], [class*="userMessageContainer_"], [class*="userMessage"], [class*="slashCommandMessage"]';
     const map = {
       '\\\\u2066': '\\u2066',
       '\\\\u2067': '\\u2067',
@@ -422,8 +477,15 @@ ${JS_PATCH_START}
       if (!element.matches(TARGET_DIR_SELECTOR)) {
         return;
       }
-      const isTextEntry = element.matches('input, textarea, [role="textbox"], [contenteditable="true"]');
-      if (!isTextEntry && !element.closest(CLAUDE_SCOPE_SELECTOR)) {
+      const isTextEntry = element.matches(INPUT_SELECTOR);
+      if (isTextEntry) {
+        element.style.setProperty('direction', 'auto', 'important');
+        element.style.setProperty('text-align', 'start', 'important');
+        element.style.setProperty('unicode-bidi', 'plaintext', 'important');
+        return;
+      }
+
+      if (!element.closest(CLAUDE_SCOPE_SELECTOR)) {
         return;
       }
 
@@ -448,6 +510,16 @@ ${JS_PATCH_START}
           element.setAttribute('data-lara-user-rtl', '1');
         } else {
           element.removeAttribute('data-lara-user-rtl');
+        }
+        return;
+      }
+
+      if (element.matches(HEADING_SELECTOR)) {
+        if (hasArabic) {
+          element.setAttribute('data-lara-heading-rtl', '1');
+          applyDirection(element, 'rtl', isMixed);
+        } else {
+          element.removeAttribute('data-lara-heading-rtl');
         }
         return;
       }
