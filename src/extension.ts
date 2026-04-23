@@ -22,7 +22,10 @@ const CSS_PATCH_BLOCK = `${CSS_PATCH_START}
   [class*="root_"],
   [class*="toolBodyRowContent_"],
   .userMessage_07S1Yg,
-  .message_07S1Yg.userMessageContainer_07S1Yg
+  .message_07S1Yg.userMessageContainer_07S1Yg,
+  [class*="userMessage_"],
+  [class*="userMessageContainer_"],
+  [class*="userMessage"]
 ) {
   text-align: start !important;
 }
@@ -35,7 +38,10 @@ const CSS_PATCH_BLOCK = `${CSS_PATCH_START}
   .chat-message,
   [class*="root_"],
   [class*="toolBodyRowContent_"],
-  .userMessage_07S1Yg
+  .userMessage_07S1Yg,
+  [class*="userMessage_"],
+  [class*="userMessageContainer_"],
+  [class*="userMessage"]
 ) :where(p, li, div, span, td, th, blockquote) {
   unicode-bidi: plaintext !important;
 }
@@ -43,6 +49,13 @@ const CSS_PATCH_BLOCK = `${CSS_PATCH_START}
 [data-lara-mixed-rtl="1"] {
   direction: rtl !important;
   text-align: start !important;
+  unicode-bidi: isolate !important;
+}
+
+[data-lara-user-rtl="1"],
+[data-lara-user-rtl="1"] :where(div, span, p, input, textarea, [role="textbox"], [contenteditable="true"]) {
+  direction: rtl !important;
+  text-align: right !important;
   unicode-bidi: isolate !important;
 }
 
@@ -95,6 +108,13 @@ const HTML_PATCH_BLOCK = `${HTML_PATCH_START}
     unicode-bidi: isolate !important;
   }
 
+  [data-lara-user-rtl="1"],
+  [data-lara-user-rtl="1"] :where(div, span, p, input, textarea, [role="textbox"], [contenteditable="true"]) {
+    direction: rtl !important;
+    text-align: right !important;
+    unicode-bidi: isolate !important;
+  }
+
   [data-lara-rtl-list="1"] {
     direction: rtl !important;
   }
@@ -132,9 +152,9 @@ const HTML_PATCH_BLOCK = `${HTML_PATCH_START}
   const ESCAPE_RE = /\\\\u206[6-9]|\\\\u200[e-f]/g;
   const ARABIC_RE = /[\\u0590-\\u08FF]/;
   const LATIN_RE = /[A-Za-z]/;
-  const USER_MESSAGE_SELECTOR = '.userMessage_07S1Yg';
-  const TARGET_DIR_SELECTOR = '.content_mLrg7g, .secondaryLine_mLrg7g, .toolBodyRowContent_ZUQaOA, .userMessage_07S1Yg, p, li, blockquote, td, th';
-  const CLAUDE_SCOPE_SELECTOR = '.markdown-body, .prose, .message, .message-content, .chat-message, [class*="root_"], [class*="toolBodyRowContent_"], .content_mLrg7g, .secondaryLine_mLrg7g, .userMessage_07S1Yg';
+  const USER_MESSAGE_SELECTOR = '.userMessage_07S1Yg, .message_07S1Yg.userMessageContainer_07S1Yg, .slashCommandMessage_07S1Yg, .slashCommandResultMessage_07S1Yg, [class*="userMessage_"], [class*="userMessageContainer_"], [class*="userMessage"], [class*="slashCommandMessage"]';
+  const TARGET_DIR_SELECTOR = '.content_mLrg7g, .secondaryLine_mLrg7g, .toolBodyRowContent_ZUQaOA, .message_07S1Yg, .userMessage_07S1Yg, .message_07S1Yg.userMessageContainer_07S1Yg, .slashCommandMessage_07S1Yg, .slashCommandResultMessage_07S1Yg, [class*="userMessage_"], [class*="userMessageContainer_"], [class*="userMessage"], [class*="slashCommandMessage"], p, li, blockquote, td, th, input, textarea, [role="textbox"], [contenteditable="true"]';
+  const CLAUDE_SCOPE_SELECTOR = '.markdown-body, .prose, .message, .message-content, .chat-message, [class*="root_"], [class*="toolBodyRowContent_"], .content_mLrg7g, .secondaryLine_mLrg7g, .userMessage_07S1Yg, [class*="userMessage_"], [class*="userMessageContainer_"], [class*="userMessage"]';
 
   const map = {
     "\\\\u2066": "\\u2066",
@@ -147,6 +167,13 @@ const HTML_PATCH_BLOCK = `${HTML_PATCH_START}
 
   const decodeEscapedBidi = (input) => input.replace(ESCAPE_RE, (token) => map[token] ?? token);
 
+  const applyDirection = (element, dir, isMixed) => {
+    element.setAttribute('dir', dir);
+    element.style.setProperty('direction', dir, 'important');
+    element.style.setProperty('text-align', dir === 'rtl' ? 'right' : 'left', 'important');
+    element.style.setProperty('unicode-bidi', isMixed ? 'isolate' : 'plaintext', 'important');
+  };
+
   const processTextNode = (node) => {
     const value = node.nodeValue ?? '';
     if (!value.includes('\\\\u20')) {
@@ -157,6 +184,13 @@ const HTML_PATCH_BLOCK = `${HTML_PATCH_START}
     if (decoded !== value) {
       node.nodeValue = decoded;
     }
+  };
+
+  const readElementText = (element) => {
+    if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
+      return element.value ?? '';
+    }
+    return element.textContent ?? '';
   };
 
   const processElement = (element) => {
@@ -171,11 +205,12 @@ const HTML_PATCH_BLOCK = `${HTML_PATCH_START}
     if (!element.matches(TARGET_DIR_SELECTOR)) {
       return;
     }
-    if (!element.closest(CLAUDE_SCOPE_SELECTOR)) {
+    const isTextEntry = element.matches('input, textarea, [role="textbox"], [contenteditable="true"]');
+    if (!isTextEntry && !element.closest(CLAUDE_SCOPE_SELECTOR)) {
       return;
     }
 
-    const text = (element.textContent ?? '').trim();
+    const text = readElementText(element).trim();
     if (!text) {
       return;
     }
@@ -191,18 +226,17 @@ const HTML_PATCH_BLOCK = `${HTML_PATCH_START}
 
     if (element.matches(USER_MESSAGE_SELECTOR)) {
       const dir = hasArabic ? 'rtl' : 'ltr';
-      element.setAttribute('dir', dir);
-      element.style.direction = dir;
-      element.style.textAlign = 'start';
-      element.style.unicodeBidi = isMixed ? 'isolate' : 'plaintext';
+      applyDirection(element, dir, isMixed);
+      if (hasArabic) {
+        element.setAttribute('data-lara-user-rtl', '1');
+      } else {
+        element.removeAttribute('data-lara-user-rtl');
+      }
       return;
     }
 
     if (isMixed) {
-      element.setAttribute('dir', 'rtl');
-      element.style.direction = 'rtl';
-      element.style.textAlign = 'start';
-      element.style.unicodeBidi = 'isolate';
+      applyDirection(element, 'rtl', true);
       if (element.matches('li')) {
         const list = element.closest('ul, ol');
         if (list instanceof HTMLElement) {
@@ -214,10 +248,7 @@ const HTML_PATCH_BLOCK = `${HTML_PATCH_START}
     }
 
     if (hasArabic) {
-      element.setAttribute('dir', 'rtl');
-      element.style.direction = 'rtl';
-      element.style.textAlign = 'start';
-      element.style.unicodeBidi = 'plaintext';
+      applyDirection(element, 'rtl', false);
       if (element.matches('li')) {
         const list = element.closest('ul, ol');
         if (list instanceof HTMLElement) {
@@ -291,15 +322,21 @@ ${JS_PATCH_START}
       const style = document.createElement('style');
       style.id = STYLE_ID;
       style.textContent = \`
-        :where(.markdown-body, .prose, .message, .message-content, .chat-message, [class*="root_"], [class*="toolBodyRowContent_"], .userMessage_07S1Yg, .message_07S1Yg.userMessageContainer_07S1Yg) {
+        :where(.markdown-body, .prose, .message, .message-content, .chat-message, [class*="root_"], [class*="toolBodyRowContent_"], .userMessage_07S1Yg, .message_07S1Yg.userMessageContainer_07S1Yg, [class*="userMessage_"], [class*="userMessageContainer_"], [class*="userMessage"]) {
           text-align: start !important;
         }
-        :where(.markdown-body, .prose, .message, .message-content, .chat-message, [class*="root_"], [class*="toolBodyRowContent_"], .userMessage_07S1Yg) :where(p, li, div, span, td, th, blockquote) {
+        :where(.markdown-body, .prose, .message, .message-content, .chat-message, [class*="root_"], [class*="toolBodyRowContent_"], .userMessage_07S1Yg, [class*="userMessage_"], [class*="userMessageContainer_"], [class*="userMessage"]) :where(p, li, div, span, td, th, blockquote) {
           unicode-bidi: plaintext !important;
         }
         [data-lara-mixed-rtl="1"] {
           direction: rtl !important;
           text-align: start !important;
+          unicode-bidi: isolate !important;
+        }
+        [data-lara-user-rtl="1"],
+        [data-lara-user-rtl="1"] :where(div, span, p, input, textarea, [role="textbox"], [contenteditable="true"]) {
+          direction: rtl !important;
+          text-align: right !important;
           unicode-bidi: isolate !important;
         }
         [data-lara-rtl-list="1"] {
@@ -335,9 +372,9 @@ ${JS_PATCH_START}
     const ESCAPE_RE = /\\\\u206[6-9]|\\\\u200[e-f]/g;
     const ARABIC_RE = /[\\u0590-\\u08FF]/;
     const LATIN_RE = /[A-Za-z]/;
-    const USER_MESSAGE_SELECTOR = '.userMessage_07S1Yg';
-    const TARGET_DIR_SELECTOR = '.content_mLrg7g, .secondaryLine_mLrg7g, .toolBodyRowContent_ZUQaOA, .userMessage_07S1Yg, p, li, blockquote, td, th';
-    const CLAUDE_SCOPE_SELECTOR = '.markdown-body, .prose, .message, .message-content, .chat-message, [class*="root_"], [class*="toolBodyRowContent_"], .content_mLrg7g, .secondaryLine_mLrg7g, .userMessage_07S1Yg';
+    const USER_MESSAGE_SELECTOR = '.userMessage_07S1Yg, .message_07S1Yg.userMessageContainer_07S1Yg, .slashCommandMessage_07S1Yg, .slashCommandResultMessage_07S1Yg, [class*="userMessage_"], [class*="userMessageContainer_"], [class*="userMessage"], [class*="slashCommandMessage"]';
+    const TARGET_DIR_SELECTOR = '.content_mLrg7g, .secondaryLine_mLrg7g, .toolBodyRowContent_ZUQaOA, .message_07S1Yg, .userMessage_07S1Yg, .message_07S1Yg.userMessageContainer_07S1Yg, .slashCommandMessage_07S1Yg, .slashCommandResultMessage_07S1Yg, [class*="userMessage_"], [class*="userMessageContainer_"], [class*="userMessage"], [class*="slashCommandMessage"], p, li, blockquote, td, th, input, textarea, [role="textbox"], [contenteditable="true"]';
+    const CLAUDE_SCOPE_SELECTOR = '.markdown-body, .prose, .message, .message-content, .chat-message, [class*="root_"], [class*="toolBodyRowContent_"], .content_mLrg7g, .secondaryLine_mLrg7g, .userMessage_07S1Yg, [class*="userMessage_"], [class*="userMessageContainer_"], [class*="userMessage"]';
     const map = {
       '\\\\u2066': '\\u2066',
       '\\\\u2067': '\\u2067',
@@ -349,6 +386,13 @@ ${JS_PATCH_START}
 
     const decodeEscapedBidi = (input) => input.replace(ESCAPE_RE, (token) => map[token] ?? token);
 
+    const applyDirection = (element, dir, isMixed) => {
+      element.setAttribute('dir', dir);
+      element.style.setProperty('direction', dir, 'important');
+      element.style.setProperty('text-align', dir === 'rtl' ? 'right' : 'left', 'important');
+      element.style.setProperty('unicode-bidi', isMixed ? 'isolate' : 'plaintext', 'important');
+    };
+
     const processTextNode = (node) => {
       const value = node.nodeValue ?? '';
       if (!value.includes('\\\\u20')) {
@@ -358,6 +402,13 @@ ${JS_PATCH_START}
       if (decoded !== value) {
         node.nodeValue = decoded;
       }
+    };
+
+    const readElementText = (element) => {
+      if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
+        return element.value ?? '';
+      }
+      return element.textContent ?? '';
     };
 
     const processElement = (element) => {
@@ -371,11 +422,12 @@ ${JS_PATCH_START}
       if (!element.matches(TARGET_DIR_SELECTOR)) {
         return;
       }
-      if (!element.closest(CLAUDE_SCOPE_SELECTOR)) {
+      const isTextEntry = element.matches('input, textarea, [role="textbox"], [contenteditable="true"]');
+      if (!isTextEntry && !element.closest(CLAUDE_SCOPE_SELECTOR)) {
         return;
       }
 
-      const text = (element.textContent ?? '').trim();
+      const text = readElementText(element).trim();
       if (!text) {
         return;
       }
@@ -391,18 +443,17 @@ ${JS_PATCH_START}
 
       if (element.matches(USER_MESSAGE_SELECTOR)) {
         const dir = hasArabic ? 'rtl' : 'ltr';
-        element.setAttribute('dir', dir);
-        element.style.direction = dir;
-        element.style.textAlign = 'start';
-        element.style.unicodeBidi = isMixed ? 'isolate' : 'plaintext';
+        applyDirection(element, dir, isMixed);
+        if (hasArabic) {
+          element.setAttribute('data-lara-user-rtl', '1');
+        } else {
+          element.removeAttribute('data-lara-user-rtl');
+        }
         return;
       }
 
       if (isMixed) {
-        element.setAttribute('dir', 'rtl');
-        element.style.direction = 'rtl';
-        element.style.textAlign = 'start';
-        element.style.unicodeBidi = 'isolate';
+        applyDirection(element, 'rtl', true);
         if (element.matches('li')) {
           const list = element.closest('ul, ol');
           if (list instanceof HTMLElement) {
@@ -414,10 +465,7 @@ ${JS_PATCH_START}
       }
 
       if (hasArabic) {
-        element.setAttribute('dir', 'rtl');
-        element.style.direction = 'rtl';
-        element.style.textAlign = 'start';
-        element.style.unicodeBidi = 'plaintext';
+        applyDirection(element, 'rtl', false);
         if (element.matches('li')) {
           const list = element.closest('ul, ol');
           if (list instanceof HTMLElement) {
