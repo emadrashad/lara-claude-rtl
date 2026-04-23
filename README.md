@@ -1,45 +1,61 @@
-# Claude RTL Fix (VS Code Extension)
+# Lara Claude RTL Patcher
 
-Local helper extension that patches installed **Claude Code for VS Code** webview assets to improve Arabic/RTL mixed-text rendering.
+**Lara Claude RTL Patcher** is a VS Code extension that patches installed **Claude Code for VS Code** webview assets to improve Arabic/RTL mixed-text rendering.
 
-## What it does
+## Features
 
-- Finds installed Claude extension(s) by id.
-- Patches `.css`, `.html`, and `.js` files in that extension folder.
-- Adds BiDi/RTL rendering rules (`unicode-bidi: plaintext`, `text-align: start`).
-- Adds a small DOM post-processor for escaped BiDi control literals (for example `\\u2067`).
-- Creates backup files per patched file: `<file>.claude-rtl-fix.bak`.
-- Supports one-click revert.
+- Detects installed Claude extension targets.
+- Patches `.css`, `.html`, and `.js` webview assets.
+- Applies RTL/BiDi rendering fixes for mixed Arabic/English content.
+- Fixes list marker rendering in RTL contexts.
+- Decodes escaped Unicode BiDi control literals (for example `\\u2067`) at runtime.
+- Creates per-file backups before patching: `<file>.lara-claude-rtl-patcher.bak`.
+- Supports revert and patch status commands.
 
 ## Commands
 
-- `Claude RTL Fix: Apply Patch`
-- `Claude RTL Fix: Revert Patch`
-- `Claude RTL Fix: Show Patch Status`
+- `Lara Claude RTL Patcher: Apply Patch`
+- `Lara Claude RTL Patcher: Revert Patch`
+- `Lara Claude RTL Patcher: Show Patch Status`
 
-## Local run
-
-1. Open `/Users/macbook/Sites/claude-rtl-fix` in VS Code.
-2. Run:
+## Local development
 
 ```bash
 npm install
 npm run build
 ```
 
-3. Press `F5` to launch Extension Development Host.
-4. In the new VS Code window, run command palette and execute `Claude RTL Fix: Apply Patch`.
-5. Reload window when prompted.
+Run extension host with `F5` in VS Code, then trigger commands from Command Palette.
 
-## Package as VSIX
+## Build VSIX
 
 ```bash
 npm run package
 ```
 
-Then install generated `.vsix` manually.
+Install locally:
+
+```bash
+code --install-extension lara-claude-rtl-patcher-1.0.0.vsix --force
+```
+
+## Publish to Visual Studio Marketplace (Official)
+
+1. Create a publisher in Azure DevOps / VS Marketplace (for example `lara`).
+2. Generate a Personal Access Token (PAT) with Marketplace manage scope.
+3. Login once:
+
+```bash
+npx @vscode/vsce login <publisher-id>
+```
+
+4. Publish:
+
+```bash
+npm run publish:marketplace
+```
 
 ## Notes
 
-- This is a local patcher workaround, not an official Anthropic fix.
-- Claude extension updates may overwrite patched files; run `Apply Patch` again after updates.
+- This extension patches Claude extension assets locally; Claude updates can overwrite patches.
+- Re-run `Apply Patch` after Claude extension updates.

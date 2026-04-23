@@ -1,5 +1,32 @@
 # Changelog
 
+## 1.0.3
+
+- Fixed mixed Arabic/English lines that start with Latin text or emoji by introducing `data-lara-mixed-rtl` override (`unicode-bidi: isolate` + forced RTL).
+- Added patch migration behavior for existing installations:
+  - Replaces existing JS/CSS/HTML patch blocks with the latest version instead of skipping.
+  - Automatically removes legacy `__CLAUDE_RTL_FIX_SAFE__` JS blocks to prevent runtime conflicts.
+
+## 1.0.2
+
+- Added explicit mixed-content rule: Arabic + English lines are forced to `rtl` for more comfortable reading.
+- Expanded runtime direction targeting to line-level elements (`p`, `li`, `blockquote`, `td`, `th`) within Claude message scope.
+- Kept user-message behavior stable (`hasArabic => rtl`, otherwise `ltr`).
+
+## 1.0.1
+
+- Fixed mixed Arabic/English rendering edge case when emoji appears in list lines.
+- Removed `dir="auto"` list marker CSS overrides that caused alignment side effects.
+- Restored explicit `dir="rtl"` handling for Arabic response blocks while keeping narrowed targeting.
+
+## 1.0.0
+
+- Re-branded extension as **Lara Claude RTL Patcher**.
+- Updated command titles and runtime status messaging to Lara branding.
+- Switched extension command IDs to `laraClaudeRtlPatcher.*`.
+- Updated backup naming to `.lara-claude-rtl-patcher.bak`.
+- Added Marketplace publishing metadata and MIT license.
+
 ## 0.0.11
 
 - Stopped applying direction heuristics to broad root containers to avoid whole-response right-shift in deep analysis views.

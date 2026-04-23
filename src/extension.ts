@@ -3,7 +3,7 @@ import * as path from 'node:path';
 import type { Dirent } from 'node:fs';
 import * as vscode from 'vscode';
 
-const PATCH_STATE_KEY = 'claudeRtlFix.patchedFiles.v1';
+const PATCH_STATE_KEY = 'laraClaudeRtlPatcher.patchedFiles.v1';
 
 const CSS_PATCH_START = '/* __CLAUDE_RTL_FIX_START__ */';
 const CSS_PATCH_END = '/* __CLAUDE_RTL_FIX_END__ */';
@@ -40,30 +40,30 @@ const CSS_PATCH_BLOCK = `${CSS_PATCH_START}
   unicode-bidi: plaintext !important;
 }
 
+[data-lara-mixed-rtl="1"] {
+  direction: rtl !important;
+  text-align: start !important;
+  unicode-bidi: isolate !important;
+}
+
 [dir="rtl"] ul,
-[dir="rtl"] ol,
-[dir="auto"] ul,
-[dir="auto"] ol {
+[dir="rtl"] ol {
   padding-inline-start: 0 !important;
   padding-inline-end: 1.25rem !important;
   margin-inline: 0 !important;
   list-style-position: outside !important;
 }
 
-[dir="rtl"] li,
-[dir="auto"] li {
+[dir="rtl"] li {
   text-align: right !important;
 }
 
-[dir="rtl"] li::marker,
-[dir="auto"] li::marker {
+[dir="rtl"] li::marker {
   unicode-bidi: isolate !important;
 }
 
 [dir="rtl"] td ul,
-[dir="rtl"] td ol,
-[dir="auto"] td ul,
-[dir="auto"] td ol {
+[dir="rtl"] td ol {
   padding-inline-end: 1rem !important;
 }
 
@@ -84,30 +84,30 @@ const HTML_PATCH_BLOCK = `${HTML_PATCH_START}
     unicode-bidi: plaintext !important;
   }
 
+  [data-lara-mixed-rtl="1"] {
+    direction: rtl !important;
+    text-align: start !important;
+    unicode-bidi: isolate !important;
+  }
+
   [dir="rtl"] ul,
-  [dir="rtl"] ol,
-  [dir="auto"] ul,
-  [dir="auto"] ol {
+  [dir="rtl"] ol {
     padding-inline-start: 0 !important;
     padding-inline-end: 1.25rem !important;
     margin-inline: 0 !important;
     list-style-position: outside !important;
   }
 
-  [dir="rtl"] li,
-  [dir="auto"] li {
+  [dir="rtl"] li {
     text-align: right !important;
   }
 
-  [dir="rtl"] li::marker,
-  [dir="auto"] li::marker {
+  [dir="rtl"] li::marker {
     unicode-bidi: isolate !important;
   }
 
   [dir="rtl"] td ul,
-  [dir="rtl"] td ol,
-  [dir="auto"] td ul,
-  [dir="auto"] td ol {
+  [dir="rtl"] td ol {
     padding-inline-end: 1rem !important;
   }
 
@@ -121,8 +121,10 @@ const HTML_PATCH_BLOCK = `${HTML_PATCH_START}
 (() => {
   const ESCAPE_RE = /\\\\u206[6-9]|\\\\u200[e-f]/g;
   const ARABIC_RE = /[\\u0590-\\u08FF]/;
+  const LATIN_RE = /[A-Za-z]/;
   const USER_MESSAGE_SELECTOR = '.userMessage_07S1Yg';
-  const TARGET_DIR_SELECTOR = '.content_mLrg7g, .secondaryLine_mLrg7g, .toolBodyRowContent_ZUQaOA, .userMessage_07S1Yg';
+  const TARGET_DIR_SELECTOR = '.content_mLrg7g, .secondaryLine_mLrg7g, .toolBodyRowContent_ZUQaOA, .userMessage_07S1Yg, p, li, blockquote, td, th';
+  const CLAUDE_SCOPE_SELECTOR = '.markdown-body, .prose, .message, .message-content, .chat-message, [class*="root_"], [class*="toolBodyRowContent_"], .content_mLrg7g, .secondaryLine_mLrg7g, .userMessage_07S1Yg';
 
   const map = {
     "\\\\u2066": "\\u2066",
@@ -159,24 +161,44 @@ const HTML_PATCH_BLOCK = `${HTML_PATCH_START}
     if (!element.matches(TARGET_DIR_SELECTOR)) {
       return;
     }
+    if (!element.closest(CLAUDE_SCOPE_SELECTOR)) {
+      return;
+    }
 
     const text = (element.textContent ?? '').trim();
     if (!text) {
       return;
     }
+    const hasArabic = ARABIC_RE.test(text);
+    const hasLatin = LATIN_RE.test(text);
+    const isMixed = hasArabic && hasLatin;
+
+    if (isMixed) {
+      element.setAttribute('data-lara-mixed-rtl', '1');
+    } else {
+      element.removeAttribute('data-lara-mixed-rtl');
+    }
 
     if (element.matches(USER_MESSAGE_SELECTOR)) {
-      const dir = ARABIC_RE.test(text) ? 'rtl' : 'ltr';
+      const dir = hasArabic ? 'rtl' : 'ltr';
       element.setAttribute('dir', dir);
       element.style.direction = dir;
       element.style.textAlign = 'start';
-      element.style.unicodeBidi = 'plaintext';
+      element.style.unicodeBidi = isMixed ? 'isolate' : 'plaintext';
       return;
     }
 
-    if (ARABIC_RE.test(text)) {
-      element.setAttribute('dir', 'auto');
-      element.style.removeProperty('direction');
+    if (isMixed) {
+      element.setAttribute('dir', 'rtl');
+      element.style.direction = 'rtl';
+      element.style.textAlign = 'start';
+      element.style.unicodeBidi = 'isolate';
+      return;
+    }
+
+    if (hasArabic) {
+      element.setAttribute('dir', 'rtl');
+      element.style.direction = 'rtl';
       element.style.textAlign = 'start';
       element.style.unicodeBidi = 'plaintext';
     }
@@ -234,6 +256,7 @@ ${HTML_PATCH_END}`;
 const CSS_BLOCK_RE = /\/\* __CLAUDE_RTL_FIX_START__ \*\/[\s\S]*?\/\* __CLAUDE_RTL_FIX_END__ \*\//g;
 const HTML_BLOCK_RE = /<!-- __CLAUDE_RTL_FIX_HTML_START__ -->[\s\S]*?<!-- __CLAUDE_RTL_FIX_HTML_END__ -->/g;
 const JS_BLOCK_RE = /\/\* __CLAUDE_RTL_FIX_JS_START__ \*\/[\s\S]*?\/\* __CLAUDE_RTL_FIX_JS_END__ \*\//g;
+const JS_SAFE_BLOCK_RE = /\/\* __CLAUDE_RTL_FIX_SAFE_START__ \*\/[\s\S]*?\/\* __CLAUDE_RTL_FIX_SAFE_END__ \*\//g;
 
 const JS_PATCH_BLOCK = `
 ${JS_PATCH_START}
@@ -250,27 +273,26 @@ ${JS_PATCH_START}
         :where(.markdown-body, .prose, .message, .message-content, .chat-message, [class*="root_"], [class*="toolBodyRowContent_"], .userMessage_07S1Yg) :where(p, li, div, span, td, th, blockquote) {
           unicode-bidi: plaintext !important;
         }
+        [data-lara-mixed-rtl="1"] {
+          direction: rtl !important;
+          text-align: start !important;
+          unicode-bidi: isolate !important;
+        }
         [dir="rtl"] ul,
-        [dir="rtl"] ol,
-        [dir="auto"] ul,
-        [dir="auto"] ol {
+        [dir="rtl"] ol {
           padding-inline-start: 0 !important;
           padding-inline-end: 1.25rem !important;
           margin-inline: 0 !important;
           list-style-position: outside !important;
         }
-        [dir="rtl"] li,
-        [dir="auto"] li {
+        [dir="rtl"] li {
           text-align: right !important;
         }
-        [dir="rtl"] li::marker,
-        [dir="auto"] li::marker {
+        [dir="rtl"] li::marker {
           unicode-bidi: isolate !important;
         }
         [dir="rtl"] td ul,
-        [dir="rtl"] td ol,
-        [dir="auto"] td ul,
-        [dir="auto"] td ol {
+        [dir="rtl"] td ol {
           padding-inline-end: 1rem !important;
         }
         :where(pre, code, kbd, samp) {
@@ -284,8 +306,10 @@ ${JS_PATCH_START}
 
     const ESCAPE_RE = /\\\\u206[6-9]|\\\\u200[e-f]/g;
     const ARABIC_RE = /[\\u0590-\\u08FF]/;
+    const LATIN_RE = /[A-Za-z]/;
     const USER_MESSAGE_SELECTOR = '.userMessage_07S1Yg';
-    const TARGET_DIR_SELECTOR = '.content_mLrg7g, .secondaryLine_mLrg7g, .toolBodyRowContent_ZUQaOA, .userMessage_07S1Yg';
+    const TARGET_DIR_SELECTOR = '.content_mLrg7g, .secondaryLine_mLrg7g, .toolBodyRowContent_ZUQaOA, .userMessage_07S1Yg, p, li, blockquote, td, th';
+    const CLAUDE_SCOPE_SELECTOR = '.markdown-body, .prose, .message, .message-content, .chat-message, [class*="root_"], [class*="toolBodyRowContent_"], .content_mLrg7g, .secondaryLine_mLrg7g, .userMessage_07S1Yg';
     const map = {
       '\\\\u2066': '\\u2066',
       '\\\\u2067': '\\u2067',
@@ -319,24 +343,44 @@ ${JS_PATCH_START}
       if (!element.matches(TARGET_DIR_SELECTOR)) {
         return;
       }
+      if (!element.closest(CLAUDE_SCOPE_SELECTOR)) {
+        return;
+      }
 
       const text = (element.textContent ?? '').trim();
       if (!text) {
         return;
       }
+      const hasArabic = ARABIC_RE.test(text);
+      const hasLatin = LATIN_RE.test(text);
+      const isMixed = hasArabic && hasLatin;
+
+      if (isMixed) {
+        element.setAttribute('data-lara-mixed-rtl', '1');
+      } else {
+        element.removeAttribute('data-lara-mixed-rtl');
+      }
 
       if (element.matches(USER_MESSAGE_SELECTOR)) {
-        const dir = ARABIC_RE.test(text) ? 'rtl' : 'ltr';
+        const dir = hasArabic ? 'rtl' : 'ltr';
         element.setAttribute('dir', dir);
         element.style.direction = dir;
         element.style.textAlign = 'start';
-        element.style.unicodeBidi = 'plaintext';
+        element.style.unicodeBidi = isMixed ? 'isolate' : 'plaintext';
         return;
       }
 
-      if (ARABIC_RE.test(text)) {
-        element.setAttribute('dir', 'auto');
-        element.style.removeProperty('direction');
+      if (isMixed) {
+        element.setAttribute('dir', 'rtl');
+        element.style.direction = 'rtl';
+        element.style.textAlign = 'start';
+        element.style.unicodeBidi = 'isolate';
+        return;
+      }
+
+      if (hasArabic) {
+        element.setAttribute('dir', 'rtl');
+        element.style.direction = 'rtl';
         element.style.textAlign = 'start';
         element.style.unicodeBidi = 'plaintext';
       }
@@ -404,13 +448,13 @@ interface TargetExtension {
 
 export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
-    vscode.commands.registerCommand('claudeRtlFix.apply', async () => {
+    vscode.commands.registerCommand('laraClaudeRtlPatcher.apply', async () => {
       await applyPatch(context);
     }),
-    vscode.commands.registerCommand('claudeRtlFix.revert', async () => {
+    vscode.commands.registerCommand('laraClaudeRtlPatcher.revert', async () => {
       await revertPatch(context);
     }),
-    vscode.commands.registerCommand('claudeRtlFix.status', async () => {
+    vscode.commands.registerCommand('laraClaudeRtlPatcher.status', async () => {
       await showStatus(context);
     })
   );
@@ -446,7 +490,7 @@ async function applyPatch(context: vscode.ExtensionContext): Promise<void> {
       continue;
     }
 
-    const backupPath = `${filePath}.claude-rtl-fix.bak`;
+    const backupPath = `${filePath}.lara-claude-rtl-patcher.bak`;
     if (!(await exists(backupPath))) {
       await fs.writeFile(backupPath, original, 'utf8');
     }
@@ -465,7 +509,7 @@ async function applyPatch(context: vscode.ExtensionContext): Promise<void> {
   await context.globalState.update(PATCH_STATE_KEY, merged);
 
   const action = await vscode.window.showInformationMessage(
-    `Claude RTL Fix applied to ${patched.length} file(s) in ${target.id}.`,
+    `Lara Claude RTL Patcher applied to ${patched.length} file(s) in ${target.id}.`,
     'Reload Window'
   );
 
@@ -477,7 +521,7 @@ async function applyPatch(context: vscode.ExtensionContext): Promise<void> {
 async function revertPatch(context: vscode.ExtensionContext): Promise<void> {
   const entries = context.globalState.get<PatchEntry[]>(PATCH_STATE_KEY, []);
   if (entries.length === 0) {
-    void vscode.window.showInformationMessage('No tracked Claude RTL patches found.');
+    void vscode.window.showInformationMessage('No tracked Lara Claude RTL Patcher entries found.');
     return;
   }
 
@@ -519,7 +563,7 @@ async function revertPatch(context: vscode.ExtensionContext): Promise<void> {
   }
 
   const action = await vscode.window.showInformationMessage(
-    `Reverted Claude RTL patch in ${revertedCount} file(s).`,
+    `Reverted Lara Claude RTL Patcher changes in ${revertedCount} file(s).`,
     'Reload Window'
   );
 
@@ -532,7 +576,7 @@ async function showStatus(context: vscode.ExtensionContext): Promise<void> {
   const entries = context.globalState.get<PatchEntry[]>(PATCH_STATE_KEY, []);
 
   if (entries.length === 0) {
-    void vscode.window.showInformationMessage('Claude RTL Fix status: no tracked patch files.');
+    void vscode.window.showInformationMessage('Lara Claude RTL Patcher status: no tracked patch files.');
     return;
   }
 
@@ -553,7 +597,7 @@ async function showStatus(context: vscode.ExtensionContext): Promise<void> {
   }
 
   void vscode.window.showInformationMessage(
-    `Claude RTL Fix status: ${existingPatches}/${entries.length} tracked file(s) currently patched.`
+    `Lara Claude RTL Patcher status: ${existingPatches}/${entries.length} tracked file(s) currently patched.`
   );
 }
 
@@ -586,7 +630,7 @@ async function pickTargetExtension(): Promise<TargetExtension | undefined> {
       description: candidate.extensionPath,
       candidate
     })),
-    { title: 'Select Claude extension target for RTL patch' }
+    { title: 'Select Claude extension target for Lara Claude RTL Patcher' }
   );
 
   return picked?.candidate;
@@ -639,7 +683,7 @@ function applyPatchToFile(filePath: string, content: string): string {
 
   if (lowerPath.endsWith('.css')) {
     if (content.includes(CSS_PATCH_START)) {
-      return content;
+      return content.replace(CSS_BLOCK_RE, CSS_PATCH_BLOCK);
     }
 
     return `${content.trimEnd()}\n\n${CSS_PATCH_BLOCK}\n`;
@@ -647,7 +691,7 @@ function applyPatchToFile(filePath: string, content: string): string {
 
   if (lowerPath.endsWith('.html') || lowerPath.endsWith('.htm')) {
     if (content.includes(HTML_PATCH_START)) {
-      return content;
+      return content.replace(HTML_BLOCK_RE, HTML_PATCH_BLOCK);
     }
 
     if (/<\/head>/i.test(content)) {
@@ -660,11 +704,13 @@ function applyPatchToFile(filePath: string, content: string): string {
   }
 
   if (lowerPath.endsWith('.js')) {
+    const normalized = content.replace(JS_SAFE_BLOCK_RE, '').trimEnd();
+
     if (content.includes(JS_PATCH_START)) {
-      return content;
+      return normalized.replace(JS_BLOCK_RE, JS_PATCH_BLOCK);
     }
 
-    return `${content.trimEnd()}\n${JS_PATCH_BLOCK}\n`;
+    return `${normalized}\n${JS_PATCH_BLOCK}\n`;
   }
 
   return content;
@@ -674,6 +720,7 @@ function stripPatch(content: string): string {
   const stripped = content
     .replace(CSS_BLOCK_RE, '')
     .replace(HTML_BLOCK_RE, '')
+    .replace(JS_SAFE_BLOCK_RE, '')
     .replace(JS_BLOCK_RE, '')
     .trimEnd();
   return stripped.length > 0 ? `${stripped}\n` : '';

@@ -1,9 +1,26 @@
 {
-  "name": "claude-rtl-fix",
-  "displayName": "Claude RTL Fix",
-  "description": "Applies a local RTL/BiDi rendering patch to Claude Code for VS Code webview assets.",
-  "version": "0.0.11",
-  "publisher": "local",
+  "name": "lara-claude-rtl-patcher",
+  "displayName": "Lara Claude RTL Patcher",
+  "description": "Official RTL/BiDi patcher for Claude Code in VS Code with Arabic-friendly mixed-text rendering.",
+  "version": "1.0.3",
+  "publisher": "lara",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lara-dev/lara-claude-rtl-patcher.git"
+  },
+  "homepage": "https://github.com/lara-dev/lara-claude-rtl-patcher#readme",
+  "bugs": {
+    "url": "https://github.com/lara-dev/lara-claude-rtl-patcher/issues"
+  },
+  "keywords": [
+    "claude",
+    "rtl",
+    "bidi",
+    "arabic",
+    "vscode",
+    "patcher"
+  ],
   "engines": {
     "vscode": "^1.90.0"
   },
@@ -11,36 +28,37 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:claudeRtlFix.apply",
-    "onCommand:claudeRtlFix.revert",
-    "onCommand:claudeRtlFix.status"
+    "onCommand:laraClaudeRtlPatcher.apply",
+    "onCommand:laraClaudeRtlPatcher.revert",
+    "onCommand:laraClaudeRtlPatcher.status"
   ],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "claudeRtlFix.apply",
-        "title": "Claude RTL Fix: Apply Patch"
+        "command": "laraClaudeRtlPatcher.apply",
+        "title": "Lara Claude RTL Patcher: Apply Patch"
       },
       {
-        "command": "claudeRtlFix.revert",
-        "title": "Claude RTL Fix: Revert Patch"
+        "command": "laraClaudeRtlPatcher.revert",
+        "title": "Lara Claude RTL Patcher: Revert Patch"
       },
       {
-        "command": "claudeRtlFix.status",
-        "title": "Claude RTL Fix: Show Patch Status"
+        "command": "laraClaudeRtlPatcher.status",
+        "title": "Lara Claude RTL Patcher: Show Patch Status"
       }
     ]
   },
   "scripts": {
     "build": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "package": "vsce package"
+    "package": "npx @vscode/vsce package",
+    "publish:marketplace": "npx @vscode/vsce publish"
   },
   "devDependencies": {
     "@types/node": "^20.14.10",
     "@types/vscode": "^1.90.0",
     "typescript": "^5.5.4",
-    "vsce": "^2.15.0"
+    "@vscode/vsce": "^3.2.1"
   }
 }
