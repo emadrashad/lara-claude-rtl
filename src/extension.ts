@@ -96,12 +96,6 @@ const CSS_PATCH_BLOCK = `${CSS_PATCH_START}
 [dir="rtl"] td ol {
   padding-inline-end: 1rem !important;
 }
-
-:where(pre, code, kbd, samp) {
-  direction: ltr !important;
-  text-align: left !important;
-  unicode-bidi: isolate !important;
-}
 ${CSS_PATCH_END}`;
 
 const HTML_PATCH_BLOCK = `${HTML_PATCH_START}
@@ -164,12 +158,6 @@ const HTML_PATCH_BLOCK = `${HTML_PATCH_START}
   [dir="rtl"] td ol {
     padding-inline-end: 1rem !important;
   }
-
-  :where(pre, code, kbd, samp) {
-    direction: ltr !important;
-    text-align: left !important;
-    unicode-bidi: isolate !important;
-  }
 </style>
 <script id="claude-rtl-fix-script">
 (() => {
@@ -201,6 +189,10 @@ const HTML_PATCH_BLOCK = `${HTML_PATCH_START}
   };
 
   const processTextNode = (node) => {
+    if (node.parentElement?.closest('pre, code, kbd, samp')) {
+      return;
+    }
+
     const value = node.nodeValue ?? '';
     if (!value.includes('\\\\u20')) {
       return;
@@ -224,7 +216,7 @@ const HTML_PATCH_BLOCK = `${HTML_PATCH_START}
       return;
     }
 
-    if (element.closest('pre, code')) {
+    if (element.closest('pre, code, kbd, samp')) {
       return;
     }
 
@@ -413,11 +405,6 @@ ${JS_PATCH_START}
         [dir="rtl"] td ol {
           padding-inline-end: 1rem !important;
         }
-        :where(pre, code, kbd, samp) {
-          direction: ltr !important;
-          text-align: left !important;
-          unicode-bidi: isolate !important;
-        }
       \`;
       document.head.appendChild(style);
     }
@@ -449,6 +436,10 @@ ${JS_PATCH_START}
     };
 
     const processTextNode = (node) => {
+      if (node.parentElement?.closest('pre, code, kbd, samp')) {
+        return;
+      }
+
       const value = node.nodeValue ?? '';
       if (!value.includes('\\\\u20')) {
         return;
@@ -470,7 +461,7 @@ ${JS_PATCH_START}
       if (!(element instanceof HTMLElement)) {
         return;
       }
-      if (element.closest('pre, code')) {
+      if (element.closest('pre, code, kbd, samp')) {
         return;
       }
 

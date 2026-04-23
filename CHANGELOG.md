@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.9
+
+- Restored native Claude rendering for all code elements (`pre`, `code`, `kbd`, `samp`) with no custom styling overrides.
+- Removed inline-code flattening so inline/fenced code appearance is fully handled by Claude webview defaults.
+- Stopped RTL runtime mutations inside code contexts:
+  - `processElement` now skips any element inside `pre, code, kbd, samp`.
+  - `processTextNode` now skips text nodes inside `pre, code, kbd, samp`.
+- Kept non-code RTL behavior intact for user messages, mixed Arabic/English text, headings/lists, and textarea/input direction handling.
+
 ## 1.0.4
 
 - Fixed RTL bullet marker alignment by tagging parent lists of RTL items with `data-lara-rtl-list="1"`.
