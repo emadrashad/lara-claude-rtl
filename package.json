@@ -1,0 +1,46 @@
+{
+  "name": "claude-rtl-fix",
+  "displayName": "Claude RTL Fix",
+  "description": "Applies a local RTL/BiDi rendering patch to Claude Code for VS Code webview assets.",
+  "version": "0.0.9",
+  "publisher": "local",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:claudeRtlFix.apply",
+    "onCommand:claudeRtlFix.revert",
+    "onCommand:claudeRtlFix.status"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "claudeRtlFix.apply",
+        "title": "Claude RTL Fix: Apply Patch"
+      },
+      {
+        "command": "claudeRtlFix.revert",
+        "title": "Claude RTL Fix: Revert Patch"
+      },
+      {
+        "command": "claudeRtlFix.status",
+        "title": "Claude RTL Fix: Show Patch Status"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.10",
+    "@types/vscode": "^1.90.0",
+    "typescript": "^5.5.4",
+    "vsce": "^2.15.0"
+  }
+}
