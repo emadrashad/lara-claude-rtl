@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.10
+
+- Fixed RTL unordered/ordered list rendering in Claude responses (`ul/ol/li::marker`) for mixed Arabic/English blocks.
+- Added fallback list rules for both `dir="rtl"` and `dir="auto"`.
+- Switched non-user Arabic response containers from `dir="auto"` to explicit `dir="rtl"` so list marker alignment is consistent.
+
 ## 0.0.6
 
 - Kept input/composer behavior unchanged.

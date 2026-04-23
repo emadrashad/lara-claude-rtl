@@ -40,6 +40,33 @@ const CSS_PATCH_BLOCK = `${CSS_PATCH_START}
   unicode-bidi: plaintext !important;
 }
 
+[dir="rtl"] ul,
+[dir="rtl"] ol,
+[dir="auto"] ul,
+[dir="auto"] ol {
+  padding-inline-start: 0 !important;
+  padding-inline-end: 1.25rem !important;
+  margin-inline: 0 !important;
+  list-style-position: outside !important;
+}
+
+[dir="rtl"] li,
+[dir="auto"] li {
+  text-align: right !important;
+}
+
+[dir="rtl"] li::marker,
+[dir="auto"] li::marker {
+  unicode-bidi: isolate !important;
+}
+
+[dir="rtl"] td ul,
+[dir="rtl"] td ol,
+[dir="auto"] td ul,
+[dir="auto"] td ol {
+  padding-inline-end: 1rem !important;
+}
+
 :where(pre, code, kbd, samp) {
   direction: ltr !important;
   text-align: left !important;
@@ -55,6 +82,33 @@ const HTML_PATCH_BLOCK = `${HTML_PATCH_START}
 
   :where(.markdown-body, .prose, .message, .message-content, .chat-message) * {
     unicode-bidi: plaintext !important;
+  }
+
+  [dir="rtl"] ul,
+  [dir="rtl"] ol,
+  [dir="auto"] ul,
+  [dir="auto"] ol {
+    padding-inline-start: 0 !important;
+    padding-inline-end: 1.25rem !important;
+    margin-inline: 0 !important;
+    list-style-position: outside !important;
+  }
+
+  [dir="rtl"] li,
+  [dir="auto"] li {
+    text-align: right !important;
+  }
+
+  [dir="rtl"] li::marker,
+  [dir="auto"] li::marker {
+    unicode-bidi: isolate !important;
+  }
+
+  [dir="rtl"] td ul,
+  [dir="rtl"] td ol,
+  [dir="auto"] td ul,
+  [dir="auto"] td ol {
+    padding-inline-end: 1rem !important;
   }
 
   :where(pre, code, kbd, samp) {
@@ -121,7 +175,7 @@ const HTML_PATCH_BLOCK = `${HTML_PATCH_START}
     }
 
     if (ARABIC_RE.test(text)) {
-      element.setAttribute('dir', 'auto');
+      element.setAttribute('dir', 'rtl');
       element.style.direction = 'rtl';
       element.style.textAlign = 'start';
       element.style.unicodeBidi = 'plaintext';
@@ -196,6 +250,29 @@ ${JS_PATCH_START}
         :where(.markdown-body, .prose, .message, .message-content, .chat-message, [class*="root_"], [class*="toolBodyRowContent_"], .userMessage_07S1Yg) :where(p, li, div, span, td, th, blockquote) {
           unicode-bidi: plaintext !important;
         }
+        [dir="rtl"] ul,
+        [dir="rtl"] ol,
+        [dir="auto"] ul,
+        [dir="auto"] ol {
+          padding-inline-start: 0 !important;
+          padding-inline-end: 1.25rem !important;
+          margin-inline: 0 !important;
+          list-style-position: outside !important;
+        }
+        [dir="rtl"] li,
+        [dir="auto"] li {
+          text-align: right !important;
+        }
+        [dir="rtl"] li::marker,
+        [dir="auto"] li::marker {
+          unicode-bidi: isolate !important;
+        }
+        [dir="rtl"] td ul,
+        [dir="rtl"] td ol,
+        [dir="auto"] td ul,
+        [dir="auto"] td ol {
+          padding-inline-end: 1rem !important;
+        }
         :where(pre, code, kbd, samp) {
           direction: ltr !important;
           text-align: left !important;
@@ -258,7 +335,7 @@ ${JS_PATCH_START}
       }
 
       if (ARABIC_RE.test(text)) {
-        element.setAttribute('dir', 'auto');
+      element.setAttribute('dir', 'rtl');
         element.style.direction = 'rtl';
         element.style.textAlign = 'start';
         element.style.unicodeBidi = 'plaintext';
