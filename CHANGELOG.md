@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.8
+
+- Replaced README demo/content screenshot with `assets/main-info.png`.
+- Added `assets/main-info.png` to packaged extension files.
+
 ## 1.1.7
 
 - Updated README demo/content image to `assets/content.png`.

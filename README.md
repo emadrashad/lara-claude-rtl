@@ -12,7 +12,7 @@ This extension applies targeted RTL/BiDi fixes for natural reading flow without 
 
 ## Demo
 
-![Lara Claude RTL Patcher Content Preview](assets/content.png)
+![Lara Claude RTL Patcher Main Info](assets/main-info.png)
 
 ## Core Guarantees
 
@@ -61,7 +61,7 @@ It inserts clearly delimited patch blocks and can safely revert them later.
 Use VSIX (local/manual):
 
 ```bash
-code --install-extension lara-claude-rtl-patcher-1.1.7.vsix --force
+code --install-extension lara-claude-rtl-patcher-1.1.8.vsix --force
 ```
 
 If `code` command is missing, install it from VS Code:
