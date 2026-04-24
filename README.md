@@ -1,5 +1,7 @@
 # Lara Claude RTL Patcher
 
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Support-FFDD00?logo=buymeacoffee&logoColor=000)](https://www.buymeacoffee.com/emadrashad)
+
 ![Lara Claude RTL Patcher Icon](assets/icon.png)
 
 **Lara Claude RTL Patcher** is a production-focused VS Code extension that patches installed **Claude Code for VS Code** webview assets to improve **Arabic/RTL mixed-text readability** while preserving Claude’s native code rendering.
@@ -108,6 +110,12 @@ Commitments:
 - **GitHub:** [https://github.com/emadrashad](https://github.com/emadrashad)
 - **Email:** [emadtab97@gmail.com](mailto:emadtab97@gmail.com)
 - **Location:** Egypt
+
+## Support The Project
+
+If this extension helps your workflow, you can support ongoing maintenance and new features:
+
+- **Buy Me a Coffee:** [https://www.buymeacoffee.com/emadrashad](https://www.buymeacoffee.com/emadrashad)
 
 ## Local Development
 
