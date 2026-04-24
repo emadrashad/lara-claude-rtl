@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.1.7
+
+- Updated README demo/content image to `assets/content.png`.
+- Included `assets/content.png` in packaged extension files.
+
+## 1.1.6
+
+- Updated extension icon to final artwork: `rtl-for-claude-code.png`.
+
+## 1.1.5
+
+- Updated extension icon to the new `lara-claude.png` brand artwork.
+
 ## 1.1.4
 
 - Fixed extension README image rendering in VS Code extension details.

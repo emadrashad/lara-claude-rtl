@@ -2,7 +2,7 @@
   "name": "lara-claude-rtl-patcher",
   "displayName": "Lara Claude RTL Patcher",
   "description": "Advanced RTL/BiDi readability patcher for Claude Code in VS Code with Arabic-first mixed-text support and native code rendering preserved.",
-  "version": "1.1.4",
+  "version": "1.1.7",
   "publisher": "EmadRashad",
   "icon": "assets/icon.png",
   "galleryBanner": {
@@ -26,6 +26,7 @@
   "files": [
     "dist/**",
     "src/**",
+    "assets/content.png",
     "assets/demo.png",
     "assets/icon.png",
     "assets/icon.svg",
