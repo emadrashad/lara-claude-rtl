@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.1.4
+
+- Fixed extension README image rendering in VS Code extension details.
+- Restored standard VSCE relative-link rewriting for README assets.
+- Added repository/homepage/issues metadata for marketplace-safe asset resolution.
+- Included icon/demo assets in Git tracking so rewritten image URLs resolve correctly.
+
+## 1.1.3
+
+- Updated author name to Camel Case: `EmadRashad`.
+- Bumped release version and README install command.
+
+## 1.1.1
+
+- Changed extension publisher identifier to Camel Case: `EmadRashad`.
+- Fixed README hero image rendering by switching to Markdown image syntax.
+- Added README demo screenshot: `assets/demo.png`.
+- Included `assets/demo.png` in packaged extension files.
+
 ## 1.1.0
 
 - Added a new marketplace-ready icon (`assets/icon.png`) and source artwork (`assets/icon.svg`).

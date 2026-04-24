@@ -1,8 +1,6 @@
 # Lara Claude RTL Patcher
 
-<p align="left">
-  <img src="./assets/icon.png" alt="Lara Claude RTL Patcher icon" width="120" height="120" />
-</p>
+![Lara Claude RTL Patcher Icon](assets/icon.png)
 
 **Lara Claude RTL Patcher** is a production-focused VS Code extension that patches installed **Claude Code for VS Code** webview assets to improve **Arabic/RTL mixed-text readability** while preserving Claude’s native code rendering.
 
@@ -11,6 +9,10 @@
 Arabic + English mixed content is a real daily workflow for many developers, founders, and teams across MENA. Default rendering can make sentence flow, list markers, and mixed-direction text harder to read.
 
 This extension applies targeted RTL/BiDi fixes for natural reading flow without taking over Claude’s full visual system.
+
+## Demo
+
+![Lara Claude RTL Patcher Demo](assets/demo.png)
 
 ## Core Guarantees
 
@@ -59,7 +61,7 @@ It inserts clearly delimited patch blocks and can safely revert them later.
 Use VSIX (local/manual):
 
 ```bash
-code --install-extension lara-claude-rtl-patcher-1.1.0.vsix --force
+code --install-extension lara-claude-rtl-patcher-1.1.4.vsix --force
 ```
 
 If `code` command is missing, install it from VS Code:
@@ -102,7 +104,7 @@ Commitments:
 
 ## About The Author
 
-- **Name:** Emad Rashad
+- **Name:** EmadRashad
 - **GitHub:** [https://github.com/emadrashad](https://github.com/emadrashad)
 - **Email:** [emadtab97@gmail.com](mailto:emadtab97@gmail.com)
 - **Location:** Egypt
