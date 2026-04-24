@@ -1,9 +1,19 @@
 {
   "name": "lara-claude-rtl-patcher",
   "displayName": "Lara Claude RTL Patcher",
-  "description": "Official RTL/BiDi patcher for Claude Code in VS Code with Arabic-friendly mixed-text rendering.",
-  "version": "1.0.9",
+  "description": "Advanced RTL/BiDi readability patcher for Claude Code in VS Code with Arabic-first mixed-text support and native code rendering preserved.",
+  "version": "1.1.0",
   "publisher": "lara",
+  "icon": "assets/icon.png",
+  "galleryBanner": {
+    "color": "#0B1220",
+    "theme": "dark"
+  },
+  "author": {
+    "name": "Emad Rashad",
+    "email": "emadtab97@gmail.com",
+    "url": "https://github.com/emadrashad"
+  },
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -13,13 +23,27 @@
   "bugs": {
     "url": "https://github.com/lara-dev/lara-claude-rtl-patcher/issues"
   },
+  "files": [
+    "dist/**",
+    "src/**",
+    "assets/icon.png",
+    "assets/icon.svg",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "package.json",
+    "tsconfig.json"
+  ],
   "keywords": [
     "claude",
     "rtl",
     "bidi",
     "arabic",
+    "arabic-rtl",
     "vscode",
-    "patcher"
+    "patcher",
+    "localization",
+    "i18n"
   ],
   "engines": {
     "vscode": "^1.90.0"

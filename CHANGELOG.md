@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.1.0
+
+- Added a new marketplace-ready icon (`assets/icon.png`) and source artwork (`assets/icon.svg`).
+- Upgraded README with a full, polished marketplace presentation:
+  - Product positioning and guarantees.
+  - Arabic language respect statement.
+  - Clear quick-start, safety, troubleshooting, and privacy sections.
+  - Author profile section for Emad Rashad.
+- Added package metadata for stronger marketplace presentation:
+  - `icon`
+  - `galleryBanner`
+  - `author`
+  - curated `files` whitelist
+  - expanded discoverability keywords.
+
 ## 1.0.9
 
 - Restored native Claude rendering for all code elements (`pre`, `code`, `kbd`, `samp`) with no custom styling overrides.
